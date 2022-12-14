@@ -2,9 +2,9 @@ from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from tgbot.keyboards import reply
-from tgbot.services.services import format_weekdays_list, get_total
-from tgbot.states.user import CaringCost
+from src.tgbot.keyboards import reply
+from src.tgbot.services.services import format_weekdays_list, get_total
+from src.tgbot.states.user import CaringCost
 
 router = Router()
 

@@ -1,10 +1,10 @@
 from calendar import monthcalendar
 from datetime import datetime
 
-from tgbot.services.data import (correct_month_names, full_weekday_names,
-                                 holidays_2022, holidays_2023,
-                                 privileged_person_day_care_cost,
-                                 unprivileged_person_day_care_cost)
+from src.tgbot.services.data import (correct_month_names, full_weekday_names,
+                                     holidays_2022, holidays_2023,
+                                     privileged_person_day_care_cost,
+                                     unprivileged_person_day_care_cost)
 
 
 def check_privileges(is_person_privileged: str) -> str:

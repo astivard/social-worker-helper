@@ -5,7 +5,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from config import TOKEN
 
-from tgbot.handlers import user
+from src.tgbot.handlers import user
 
 
 async def main() -> None:
