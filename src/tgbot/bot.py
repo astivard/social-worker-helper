@@ -3,7 +3,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from config import TOKEN
+from src.tgbot.config import TOKEN
 
 from src.tgbot.handlers import user
 

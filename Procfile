@@ -1,1 +1,1 @@
-bot: python /src/tgbot/bot.py
+bot: python -m src.tgbot.bot
