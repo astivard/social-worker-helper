@@ -45,6 +45,13 @@ def get_total(user_data: dict) -> str:
 
 def _format_total_output(data: tuple) -> str:
     total, number_of_visit_days, day_care_cost, month = data
-    result_message = f"Вы посетили пожилого в <i>{month}</i> <b>{number_of_visit_days}</b> раз(а).\n\n" \
+    result_message = f"Вы посетили пожилого в <i>{month}</i> <b>{number_of_visit_days}</b> " \
+                     f"{_get_number_of_visits_case(number_of_visit_days)}.\n\n" \
                      f"Сумма:     <code>{number_of_visit_days} * {day_care_cost} = {total}</code>     руб."
     return result_message
+
+
+def _get_number_of_visits_case(number_of_visits: int) -> str:
+    """Возвращает слово 'раз' или 'раза' в зависимости от числа посещений"""
+
+    return 'раза' if number_of_visits in (2, 3, 4, 22, 23, 24) else 'раз'
