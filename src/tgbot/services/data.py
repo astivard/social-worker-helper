@@ -1,6 +1,11 @@
-privileged_person_day_care_cost = 0.78
-unprivileged_person_day_care_cost = 1.30
+from src.tgbot.services.tools import get_days_in_current_month
 
+privileged_person_day_care_cost = 0.82
+unprivileged_person_day_care_cost = 1.37
+
+available_privileges = ('да', 'нет')
+available_weekdays = ('пн', 'вт', 'ср', 'чт', 'пт')
+available_month_days_numbers = [str(day) for day in range(1, get_days_in_current_month() + 1)]
 
 full_weekday_names = {
     'пн': ('Понедельник', 1),
@@ -10,7 +15,7 @@ full_weekday_names = {
     'пт': ('Пятница', 5)
 }
 
-correct_month_names = {
+correct_month_names_1 = {
     1: "январе",
     2: "феврале",
     3: "марте",
@@ -23,6 +28,21 @@ correct_month_names = {
     10: "октябре",
     11: "ноябре",
     12: "декабре"
+}
+
+correct_month_names_2 = {
+    1: "января",
+    2: "февраля",
+    3: "марта",
+    4: "апреля",
+    5: "мая",
+    6: "июня",
+    7: "июля",
+    8: "августа",
+    9: "сентября",
+    10: "октября",
+    11: "ноября",
+    12: "декабря"
 }
 
 holidays_2022 = ((7,),  # Январь

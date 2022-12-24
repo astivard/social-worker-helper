@@ -3,9 +3,9 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
-from src.tgbot.config import TOKEN
 
-from src.tgbot.handlers import user
+from src.tgbot.config import TOKEN
+from src.tgbot.handlers import errors, user
 
 
 async def main() -> None:
@@ -17,6 +17,7 @@ async def main() -> None:
     bot = Bot(token=TOKEN, parse_mode='HTML')
     dp = Dispatcher(storage=MemoryStorage())
 
+    dp.include_router(errors.router)
     dp.include_router(user.router)
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
