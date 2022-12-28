@@ -37,17 +37,26 @@ async def set_privilege(message: types.Message, state: FSMContext) -> None:
     await state.update_data(privilege=message.text.lower())
     await state.update_data(weekdays=[])
     await message.answer(
-        text="Выберите дни недели, в которые обслуживается клиент, затем нажмите рассчитать: 👇🏻",
+        text="Выберите дни недели (либо всю неделю целиком), в которые обслуживается клиент, "
+             "затем нажмите рассчитать: 👇🏻",
         reply_markup=reply.get_weekdays_kb()
     )
 
 
-@router.message(CaringCost.weekdays, F.text.lower().in_(available_weekdays))
+@router.message(CaringCost.weekdays,
+                (F.text.lower().in_(available_weekdays)) |
+                (F.text.lower() == 'выбрать всю неделю'))
 async def set_weekdays(message: types.Message, state: FSMContext) -> None:
-    weekday = message.text.lower()
+    msg = message.text.lower()
     tmp_data = await state.get_data()
-    if weekday not in tmp_data['weekdays']:
-        tmp_data['weekdays'].append(weekday)
+    data = tmp_data['weekdays']
+
+    if msg == 'выбрать всю неделю':
+        weekdays_to_extend = list(set(available_weekdays) - set(data))
+        data.extend(weekdays_to_extend)
+    elif msg not in data:
+        data.append(msg)
+
     await state.update_data(tmp_data)
 
     user_data = await state.get_data()

@@ -16,8 +16,8 @@ def get_weekdays_kb() -> ReplyKeyboardMarkup:
     weekdays = ('ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ')
     buttons = [
         [types.KeyboardButton(text=weekday) for weekday in weekdays],
+        [types.KeyboardButton(text='Выбрать всю неделю')],
         [types.KeyboardButton(text='Рассчитать')],
-        [types.KeyboardButton(text='Начать новый расчет')]
     ]
     return types.ReplyKeyboardMarkup(keyboard=buttons,
                                      resize_keyboard=True)
