@@ -4,14 +4,18 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from src.tgbot.config import TOKEN
+from src.tgbot.config import TOKEN, ROOT_DIR
 from src.tgbot.handlers import errors, user
 
 
 async def main() -> None:
     logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        style='{',
+        level=logging.WARNING,
+        format="{asctime}: {message}",
+        datefmt='%d-%B-%Y %H:%M',
+        filename=f"{ROOT_DIR}/log.log",
+        filemode='w',
     )
 
     bot = Bot(token=TOKEN, parse_mode='HTML')
