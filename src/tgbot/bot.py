@@ -20,9 +20,9 @@ async def main() -> None:
     bot = Bot(token=TOKEN, parse_mode='HTML')
     dp = Dispatcher(storage=MemoryStorage())
 
-    dp.include_router(common.router)
     dp.include_router(errors.router)
     dp.include_router(user.router)
+    dp.include_router(common.router)
 
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
