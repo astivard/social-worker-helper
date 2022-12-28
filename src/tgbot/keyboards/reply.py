@@ -25,7 +25,8 @@ def get_weekdays_kb() -> ReplyKeyboardMarkup:
 
 def get_new_calc_kb() -> ReplyKeyboardMarkup:
     buttons = [
-        [types.KeyboardButton(text='Начать новый расчет')]
+        [types.KeyboardButton(text='Начать новый расчет')],
+        [types.KeyboardButton(text='Задать/убрать дату отсчета')]
     ]
     return types.ReplyKeyboardMarkup(keyboard=buttons,
                                      resize_keyboard=True)

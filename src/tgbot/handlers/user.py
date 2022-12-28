@@ -14,16 +14,17 @@ from src.tgbot.states.user import CaringCost
 router = Router()
 
 
-@router.message(Command(commands=["start"]))
+@router.message(Command(commands=["calc"]))
 @router.message((F.text.lower() == 'начать новый расчет') |
                 (F.text.in_(available_month_days_numbers)))
 async def start_calc(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(CaringCost.privileges)
+
     if message.text in available_month_days_numbers:
         await message.answer(
             text=get_from_date_message(msg=message.text)
         )
         await state.update_data(from_date=message.text)
-    await state.set_state(CaringCost.privileges)
     await message.answer(
         text=get_privileges_message(),
         reply_markup=reply.get_yes_no_kb(),
@@ -70,7 +71,8 @@ async def calculate(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@router.message(CaringCost.privileges, F.text.lower() == 'задать/убрать дату отсчета')
+@router.message(Command(commands=["date"]))
+@router.message(F.text.lower() == 'задать/убрать дату отсчета')
 async def set_from_date(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.from_date)
     await message.answer(
