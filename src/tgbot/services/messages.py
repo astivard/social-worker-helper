@@ -1,3 +1,5 @@
+from src.tgbot.services.data import (tariffs_with_infrastructure,
+                                     tariffs_without_infrastructure)
 from src.tgbot.services.utils import (get_current_month_name,
                                       get_number_of_visits_case)
 
@@ -46,4 +48,27 @@ def get_reboot_msg() -> str:
                      f'Дата отсчета установлена на <b>1 {get_current_month_name("2")}</b> текущего месяца.\n\n' \
                      'Пожалуйста, установите (при надобности) нужную Вам дату отсчёта - /date ' \
                      'и начните новый расчет - /calc 👇🏻'
+    return result_message
+
+
+def get_tariffs_msg() -> str:
+    result_message = '<b>Текущие тарифы:</b>\n\n' \
+                     f'<i>1) c наличием инфрастуктуры (1 час 50 минут):</i>\n\n' \
+                     f'✔️полная оплата (100%):\n     ' \
+                     f'<code>{tariffs_with_infrastructure["unprivileged_person"]} </code> руб.\n\n' \
+                     f'✔️частичная оплата (60%):\n     ' \
+                     f'<code>{tariffs_with_infrastructure["privileged_person"]} </code>руб.\n\n' \
+                     f'✔️семейные пары (50%):\n     ' \
+                     f'<code>{tariffs_with_infrastructure["married_couples_50"]} </code>руб.\n\n' \
+                     f'✔️семейные пары (80%):\n     ' \
+                     f'<code>{tariffs_with_infrastructure["married_couples_80"]} </code>руб.\n\n' \
+                     f'<i>2) без наличия инфрастуктуры (2 часа 40 минут):</i>\n\n' \
+                     f'✔️полная оплата (100%):\n     ' \
+                     f'<code>{tariffs_without_infrastructure["unprivileged_person"]} </code> руб.\n\n' \
+                     f'✔️частичная оплата (60%):\n     ' \
+                     f'<code>{tariffs_without_infrastructure["privileged_person"]} </code>руб.\n\n' \
+                     f'✔️семейные пары (50%): \n     ' \
+                     f'<code>{tariffs_without_infrastructure["married_couples_50"]} </code>руб.\n\n' \
+                     f'✔️семейные пары (80%): \n     ' \
+                     f'<code>{tariffs_without_infrastructure["married_couples_80"]} </code>руб.\n\n'
     return result_message

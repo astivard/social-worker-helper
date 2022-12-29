@@ -4,8 +4,8 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from src.tgbot.config import TOKEN, ROOT_DIR
-from src.tgbot.handlers import errors, user, common
+from src.tgbot.config import ROOT_DIR, TOKEN
+from src.tgbot.handlers import common, errors, user
 
 
 async def main() -> None:

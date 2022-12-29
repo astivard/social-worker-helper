@@ -4,8 +4,7 @@ from datetime import datetime
 from src.tgbot.services.data import (correct_month_names_1,
                                      correct_month_names_2, full_weekday_names,
                                      holidays_2022, holidays_2023,
-                                     privileged_person_day_care_cost,
-                                     unprivileged_person_day_care_cost)
+                                     tariffs_with_infrastructure)
 
 
 def check_privileges(is_person_privileged: str) -> str:
@@ -43,7 +42,8 @@ def get_total(user_data: dict) -> tuple:
     month = get_current_month_name(case='2')
     number_of_days = get_number_days(user_data)
     is_privileged = True if user_data['privilege'] == 'да' else False
-    day_care_cost = privileged_person_day_care_cost if is_privileged else unprivileged_person_day_care_cost
+    day_care_cost = tariffs_with_infrastructure["privileged_person"] if \
+        is_privileged else tariffs_with_infrastructure["unprivileged_person"]
     from_date = int(user_data.get('from_date', 1))
     total = round(number_of_days * day_care_cost, 2)
     result = (total, number_of_days, day_care_cost, month, from_date)

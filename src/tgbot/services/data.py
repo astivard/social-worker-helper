@@ -1,7 +1,18 @@
 from src.tgbot.services.tools import get_days_in_current_month
 
-privileged_person_day_care_cost = 0.82
-unprivileged_person_day_care_cost = 1.37
+tariffs_with_infrastructure = {
+    "unprivileged_person": 1.37,
+    "privileged_person": 0.82,
+    "married_couples_50": 0.69,
+    "married_couples_80": 1.10,
+}
+
+tariffs_without_infrastructure = {
+    "unprivileged_person": 2.00,
+    "privileged_person": 1.20,
+    "married_couples_50": 1.00,
+    "married_couples_80": 1.60,
+}
 
 available_privileges = ('да', 'нет')
 available_weekdays = ('пн', 'вт', 'ср', 'чт', 'пт')
