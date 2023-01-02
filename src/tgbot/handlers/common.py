@@ -4,8 +4,8 @@ from aiogram.fsm.context import FSMContext
 
 from src.tgbot.keyboards import reply
 from src.tgbot.services.data import available_privileges, available_weekdays
-from src.tgbot.services.messages import (get_help_msg, get_reboot_msg,
-                                         get_tariffs_msg, get_welcome_msg)
+from src.tgbot.services.messages import (help_msg, reboot_msg,
+                                         tariffs_msg, welcome_msg)
 
 router = Router()
 
@@ -14,7 +14,7 @@ router = Router()
 async def help_cmd(message: types.Message, state: FSMContext) -> None:
     await state.set_state(state=None)
     await message.answer(
-        text=get_help_msg(),
+        text=help_msg,
         reply_markup=reply.get_new_calc_kb(),
     )
 
@@ -23,7 +23,7 @@ async def help_cmd(message: types.Message, state: FSMContext) -> None:
 async def start_cmd(message: types.Message, state: FSMContext) -> None:
     await state.clear()
     await message.answer(
-        text=get_welcome_msg(),
+        text=welcome_msg,
         reply_markup=reply.get_new_calc_kb(),
     )
 
@@ -32,7 +32,7 @@ async def start_cmd(message: types.Message, state: FSMContext) -> None:
 async def tariffs_cmd(message: types.Message, state: FSMContext) -> None:
     await state.set_state(state=None)
     await message.answer(
-        text=get_tariffs_msg(),
+        text=tariffs_msg,
         reply_markup=reply.get_new_calc_kb(),
     )
 
@@ -44,6 +44,6 @@ async def tariffs_cmd(message: types.Message, state: FSMContext) -> None:
                 (F.text.lower() == 'считать за весь месяц'))
 async def else_cmd(message: types.Message) -> None:
     await message.answer(
-        text=get_reboot_msg(),
+        text=reboot_msg,
         reply_markup=reply.get_new_calc_kb(),
     )

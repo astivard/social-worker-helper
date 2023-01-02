@@ -1,10 +1,11 @@
 from calendar import monthcalendar
 from datetime import datetime
 
-from src.tgbot.services.data import (correct_month_names_1,
-                                     correct_month_names_2, full_weekday_names,
-                                     holidays_2022, holidays_2023,
-                                     tariffs_with_infrastructure)
+from src.tgbot.services.data import (
+    correct_month_names,
+    full_weekday_names,
+    holidays_2023,
+    tariffs)
 
 
 def check_privileges(is_person_privileged: str) -> str:
@@ -25,8 +26,7 @@ def get_number_days(data: dict) -> int:
     month = datetime.now().month
     year = datetime.now().year
     month_weeks = monthcalendar(year, month)
-    holidays = holidays_2022 if year == 2022 else holidays_2023
-    month_holidays = holidays[month - 1]
+    month_holidays = holidays_2023[month - 1]
     from_date = int(data.get('from_date', 1))
 
     for day in data['weekdays']:
@@ -39,11 +39,11 @@ def get_number_days(data: dict) -> int:
 
 
 def get_total(user_data: dict) -> tuple:
-    month = get_current_month_name(case='2')
+    month = get_current_month_name()
     number_of_days = get_number_days(user_data)
     is_privileged = True if user_data['privilege'] == 'да' else False
-    day_care_cost = tariffs_with_infrastructure["privileged_person"] if \
-        is_privileged else tariffs_with_infrastructure["unprivileged_person"]
+    day_care_cost = tariffs["privileged_person"][0] if \
+        is_privileged else tariffs["unprivileged_person"][0]
     from_date = int(user_data.get('from_date', 1))
     total = round(number_of_days * day_care_cost, 2)
     result = (total, number_of_days, day_care_cost, month, from_date)
@@ -51,11 +51,8 @@ def get_total(user_data: dict) -> tuple:
 
 
 def get_number_of_visits_case(number_of_visits: int) -> str:
-    """Возвращает слово 'раз' или 'раза' в зависимости от числа посещений"""
-
     return 'раза' if number_of_visits in (2, 3, 4, 22, 23, 24) else 'раз'
 
 
-def get_current_month_name(case: str) -> str:
-    correct_month_names = correct_month_names_1 if case == '1' else correct_month_names_2
+def get_current_month_name() -> str:
     return correct_month_names[datetime.now().month]

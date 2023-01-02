@@ -6,7 +6,7 @@ from src.tgbot.keyboards import reply
 from src.tgbot.services.data import (available_month_days_numbers,
                                      available_privileges, available_weekdays)
 from src.tgbot.services.messages import (get_from_date_message,
-                                         get_privileges_message,
+                                         privileges_message,
                                          get_total_message)
 from src.tgbot.services.utils import format_weekdays_list, get_total
 from src.tgbot.states.user import CaringCost
@@ -26,7 +26,7 @@ async def start_calc(message: types.Message, state: FSMContext) -> None:
         )
         await state.update_data(from_date=message.text)
     await message.answer(
-        text=get_privileges_message(),
+        text=privileges_message,
         reply_markup=reply.get_yes_no_kb(),
     )
 
@@ -98,6 +98,6 @@ async def cansel_from_date(message: types.Message, state: FSMContext) -> None:
     await message.answer(
         text='⚠️Вы успешно отменили дату отсчета.\n'
              'Все последующие расчеты будут проводиться с <b>начала</b> месяца.\n\n'
-             f'{get_privileges_message()}',
+             f'{privileges_message}',
         reply_markup=reply.get_yes_no_kb()
     )
