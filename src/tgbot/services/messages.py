@@ -18,6 +18,22 @@ def get_from_date_message(msg: str) -> str:
     return result_message
 
 
+def get_new_user_msg(fullname: str, username: str, user_id: int) -> str:
+    result_message = '#new_user\n' \
+                     f'Имя: {fullname}\n' \
+                     f'username: @{username}\n' \
+                     f'id: <a href="tg://user?id={user_id}">{user_id}</a>'
+    return result_message
+
+
+def get_incorrect_msg_from_user(username: str, user_id: int, msg: str) -> str:
+    result_message = '#msg_from_user\n' \
+                     f'username: @{username}\n' \
+                     f'id: <a href="tg://user?id={user_id}">{user_id}</a>\n\n' \
+                     f'<i>{msg}</i>'
+    return result_message
+
+
 privileges_message = "Выберите, является ли клиент льготником: 👇🏻"
 
 help_msg = '<b>Доступные команды бота:</b>\n\n' \
