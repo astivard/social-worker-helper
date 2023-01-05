@@ -11,7 +11,7 @@ from src.tgbot.handlers import common, errors, user
 async def main() -> None:
     logging.basicConfig(
         style='{',
-        level=logging.WARNING,
+        level=logging.INFO,
         format="{asctime}: {message}",
         datefmt='%d-%B-%Y %H:%M',
     )

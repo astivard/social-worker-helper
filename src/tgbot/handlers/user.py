@@ -6,8 +6,7 @@ from src.tgbot.keyboards import reply
 from src.tgbot.services.data import (available_month_days_numbers,
                                      available_privileges, available_weekdays)
 from src.tgbot.services.messages import (get_from_date_message,
-                                         privileges_message,
-                                         get_total_message)
+                                         get_total_message, privileges_message)
 from src.tgbot.services.utils import format_weekdays_list, get_total
 from src.tgbot.states.user import CaringCost
 
