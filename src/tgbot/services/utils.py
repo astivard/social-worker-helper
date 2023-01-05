@@ -1,11 +1,8 @@
 from calendar import monthcalendar
 from datetime import datetime
 
-from src.tgbot.services.data import (
-    correct_month_names,
-    full_weekday_names,
-    holidays_2023,
-    tariffs)
+from src.tgbot.services.data import (correct_month_names, full_weekday_names,
+                                     holidays_2023, tariffs)
 
 
 def check_privileges(is_person_privileged: str) -> str:
@@ -54,5 +51,9 @@ def get_number_of_visits_case(number_of_visits: int) -> str:
     return 'раза' if number_of_visits in (2, 3, 4, 22, 23, 24) else 'раз'
 
 
+def get_current_month_number() -> int:
+    return datetime.now().month
+
+
 def get_current_month_name() -> str:
-    return correct_month_names[datetime.now().month]
+    return correct_month_names[get_current_month_number()]

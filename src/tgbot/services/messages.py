@@ -1,5 +1,6 @@
-from src.tgbot.services.data import tariffs
+from src.tgbot.services.data import correct_month_names, holidays_2023, tariffs
 from src.tgbot.services.utils import (get_current_month_name,
+                                      get_current_month_number,
                                       get_number_of_visits_case)
 
 
@@ -32,6 +33,17 @@ def get_incorrect_msg_from_user(username: str, user_id: int, msg: str) -> str:
                      f'id: <a href="tg://user?id={user_id}">{user_id}</a>\n\n' \
                      f'<i>{msg}</i>'
     return result_message
+
+
+def get_current_month_holidays_msg():
+    non_working_holidays = {}
+    for month_number, month in enumerate(holidays_2023):
+        if 0 not in month:
+            non_working_holidays[correct_month_names[month_number + 1]] = month
+
+    result_msg = '\n'.join([f'<i>{", ".join(list(map(str, holidays)))}</i>   <b>{month}</b>' for month, holidays in
+                            non_working_holidays.items()])
+    return f'<b>Нерабочие праздничные дни:</b>\n\n{result_msg}'
 
 
 privileges_message = "Выберите, является ли клиент льготником: 👇🏻"
