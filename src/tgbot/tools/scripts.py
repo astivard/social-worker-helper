@@ -1,21 +1,10 @@
 from calendar import monthcalendar
 from datetime import datetime
 
-from src.tgbot.services.data import (correct_month_names, full_weekday_names,
-                                     holidays_2023, tariffs)
-
-
-def check_privileges(is_person_privileged: str) -> str:
-    return 'является' if is_person_privileged == 'да' else 'не является'
-
-
-def format_weekdays_list(weekdays: list) -> str:
-    full_weekdays = [full_weekday_names[weekday] for weekday in weekdays]
-    sorted_weekdays = sorted(full_weekdays, key=lambda weekday: weekday[1])
-    full_sorted_weekdays = [weekday[0] for weekday in sorted_weekdays]
-    weekdays_string = '\n'.join(full_sorted_weekdays)
-    weekdays_string = f'<b>{weekdays_string}</b>'
-    return weekdays_string
+from src.tgbot.constants.holidays import holidays_2023
+from src.tgbot.constants.tariffs import tariffs
+from src.tgbot.constants.weekdays import full_weekday_names
+from src.tgbot.tools.month import get_current_month_name
 
 
 def get_number_days(data: dict) -> int:
@@ -47,13 +36,3 @@ def get_total(user_data: dict) -> tuple:
     return result
 
 
-def get_number_of_visits_case(number_of_visits: int) -> str:
-    return 'раза' if number_of_visits in (2, 3, 4, 22, 23, 24) else 'раз'
-
-
-def get_current_month_number() -> int:
-    return datetime.now().month
-
-
-def get_current_month_name() -> str:
-    return correct_month_names[get_current_month_number()]

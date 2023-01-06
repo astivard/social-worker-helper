@@ -1,14 +1,15 @@
-from src.tgbot.services.data import correct_month_names, holidays_2023, tariffs
-from src.tgbot.services.utils import (get_current_month_name,
-                                      get_current_month_number,
-                                      get_number_of_visits_case)
+from src.tgbot.constants.holidays import holidays_2023
+from src.tgbot.constants.months import correct_month_names
+from src.tgbot.constants.tariffs import tariffs
+from src.tgbot.tools.formatters import format_number_of_visits_case
+from src.tgbot.tools.month import get_current_month_name
 
 
 def get_total_message(data: tuple) -> str:
     total, number_of_visit_days, day_care_cost, month, from_date = data
     result_message = f"Вы посетили клиента начиная c <b>{from_date}</b> <i>{month}</i> " \
                      f"<b>{number_of_visit_days}</b> " \
-                     f"{get_number_of_visits_case(number_of_visit_days)}.\n\n" \
+                     f"{format_number_of_visits_case(number_of_visit_days)}.\n\n" \
                      f"Сумма:     <code>{number_of_visit_days} * {day_care_cost} = {total}</code>     руб."
     return result_message
 

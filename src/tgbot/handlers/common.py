@@ -3,12 +3,12 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from src.tgbot.config import ADMIN_ID
+from src.tgbot.constants.messages import (get_current_month_holidays_msg,
+                                          get_incorrect_msg_from_user,
+                                          get_new_user_msg, help_msg,
+                                          reboot_msg, tariffs_msg, welcome_msg)
+from src.tgbot.constants.weekdays import full_weekday_names
 from src.tgbot.keyboards import reply
-from src.tgbot.services.data import available_privileges, available_weekdays
-from src.tgbot.services.messages import (get_current_month_holidays_msg,
-                                         get_incorrect_msg_from_user,
-                                         get_new_user_msg, help_msg,
-                                         reboot_msg, tariffs_msg, welcome_msg)
 
 router = Router()
 
@@ -56,8 +56,8 @@ async def current_month_holidays_cmd(message: types.Message, state: FSMContext) 
     )
 
 
-@router.message((F.text.lower().in_(available_privileges)) |
-                ((F.text.lower().in_(available_weekdays)) |
+@router.message((F.text.lower().in_(('да', 'нет'))) |
+                ((F.text.lower().in_(full_weekday_names.keys())) |
                  (F.text.lower() == 'выбрать всю неделю')) |
                 (F.text.lower() == 'рассчитать') |
                 (F.text.lower() == 'считать за весь месяц'))

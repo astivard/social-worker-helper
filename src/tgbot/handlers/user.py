@@ -2,24 +2,26 @@ from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
+from src.tgbot.constants.messages import (get_from_date_message,
+                                          get_total_message,
+                                          privileges_message)
+from src.tgbot.constants.weekdays import full_weekday_names
 from src.tgbot.keyboards import reply
-from src.tgbot.services.data import (available_month_days_numbers,
-                                     available_privileges, available_weekdays)
-from src.tgbot.services.messages import (get_from_date_message,
-                                         get_total_message, privileges_message)
-from src.tgbot.services.utils import format_weekdays_list, get_total
 from src.tgbot.states.user import CaringCost
+from src.tgbot.tools.formatters import format_weekdays_list
+from src.tgbot.tools.month import get_available_month_days_numbers
+from src.tgbot.tools.scripts import get_total
 
 router = Router()
 
 
 @router.message(Command(commands=["calc"]))
 @router.message((F.text.lower() == 'начать новый расчет') |
-                (F.text.in_(available_month_days_numbers)))
+                (F.text.in_(get_available_month_days_numbers())))
 async def start_calc(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.privileges)
 
-    if message.text in available_month_days_numbers:
+    if message.text in get_available_month_days_numbers():
         await message.answer(
             text=get_from_date_message(msg=message.text)
         )
@@ -30,7 +32,7 @@ async def start_calc(message: types.Message, state: FSMContext) -> None:
     )
 
 
-@router.message(CaringCost.privileges, F.text.lower().in_(available_privileges))
+@router.message(CaringCost.privileges, F.text.lower().in_(('да', 'нет')))
 async def set_privilege(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.weekdays)
     await state.update_data(privilege=message.text.lower())
@@ -43,7 +45,7 @@ async def set_privilege(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(CaringCost.weekdays,
-                (F.text.lower().in_(available_weekdays)) |
+                (F.text.lower().in_(full_weekday_names.keys())) |
                 (F.text.lower() == 'выбрать всю неделю'))
 async def set_weekdays(message: types.Message, state: FSMContext) -> None:
     msg = message.text.lower()
@@ -51,7 +53,7 @@ async def set_weekdays(message: types.Message, state: FSMContext) -> None:
     data = tmp_data['weekdays']
 
     if msg == 'выбрать всю неделю':
-        weekdays_to_extend = list(set(available_weekdays) - set(data))
+        weekdays_to_extend = list(set(full_weekday_names.keys()) - set(data))
         data.extend(weekdays_to_extend)
     elif msg not in data:
         data.append(msg)
