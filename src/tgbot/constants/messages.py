@@ -6,10 +6,12 @@ from src.tgbot.tools.month import get_current_month_name
 
 
 def get_total_message(data: tuple) -> str:
-    total, number_of_visit_days, day_care_cost, month, from_date = data
+    total, number_of_visit_days, number_of_days_data, day_care_cost, month, from_date = data
+    weekdays_info_msg = '\n'.join([f"<b>{weekday}</b>:   <i>{day}</i> {month}" for weekday, day in number_of_days_data])
     result_message = f"Вы посетили клиента начиная c <b>{from_date}</b> <i>{month}</i> " \
                      f"<b>{number_of_visit_days}</b> " \
                      f"{format_number_of_visits_case(number_of_visit_days)}.\n\n" \
+                     f"<b>Ваши посещения:</b>\n{weekdays_info_msg}.\n\n" \
                      f"Сумма:     <code>{number_of_visit_days} * {day_care_cost} = {total}</code>     руб."
     return result_message
 
