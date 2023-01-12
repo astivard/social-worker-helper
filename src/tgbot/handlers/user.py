@@ -2,10 +2,10 @@ from aiogram import F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
+from src.tgbot.constants.buttons import *
 from src.tgbot.constants.messages import (get_from_date_message,
                                           get_total_message,
                                           privileges_message)
-from src.tgbot.constants.weekdays import full_weekday_names
 from src.tgbot.keyboards import reply
 from src.tgbot.states.user import CaringCost
 from src.tgbot.tools.formatters import format_weekdays_list
@@ -82,7 +82,7 @@ async def calculate(message: types.Message, state: FSMContext) -> None:
 
 
 @router.message(Command(commands=["date"]))
-@router.message(F.text.lower() == 'задать/убрать дату отсчета')
+@router.message(F.text.lower() == SET_VISITING_PERIOD_BTN)
 async def set_from_date(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.from_date)
     await message.answer(
