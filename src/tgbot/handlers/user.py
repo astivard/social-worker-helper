@@ -1,52 +1,53 @@
-from aiogram import F, Router, types
+from aiogram import Bot, F, Router, types
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from src.tgbot.constants.buttons import *
-from src.tgbot.constants.messages import (get_from_date_message,
+from src.tgbot.constants.buttons import (CALCULATE_BTN, DELETE_ALL_PERIODS_BTN,
+                                         NO_BTN, SET_ALL_PERIODS_BTN,
+                                         SET_VISITING_PERIODS_BTN,
+                                         START_NEW_CALCULATION_BTN, WEEKDAYS,
+                                         YES_BTN, CHOOSE_All_WEEK_BTN)
+from src.tgbot.constants.messages import (get_calendar_period_msg,
+                                          get_deleting_periods_msg,
+                                          get_period_alert_msg,
+                                          get_periods_msg,
+                                          get_setting_period_msg,
                                           get_total_message,
-                                          privileges_message)
-from src.tgbot.keyboards import reply
+                                          incorrect_period_msg,
+                                          privileges_message,
+                                          empty_weekdays_list_msg,
+                                          chose_weekdays_msg)
+from src.tgbot.constants.weekdays import full_weekday_names
+from src.tgbot.keyboards import inline, reply
 from src.tgbot.states.user import CaringCost
 from src.tgbot.tools.formatters import format_weekdays_list
-from src.tgbot.tools.month import get_available_month_days_numbers
-from src.tgbot.tools.scripts import get_total
+from src.tgbot.tools.scripts import get_total, is_new_value_correct
 
 router = Router()
 
 
 @router.message(Command(commands=["calc"]))
-@router.message((F.text.lower() == 'начать новый расчет') |
-                (F.text.in_(get_available_month_days_numbers())))
+@router.message(F.text == START_NEW_CALCULATION_BTN)
 async def start_calc(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.privileges)
-
-    if message.text in get_available_month_days_numbers():
-        await message.answer(
-            text=get_from_date_message(msg=message.text)
-        )
-        await state.update_data(from_date=message.text)
     await message.answer(
         text=privileges_message,
         reply_markup=reply.get_yes_no_kb(),
     )
 
 
-@router.message(CaringCost.privileges, F.text.lower().in_(('да', 'нет')))
+@router.message(F.text.in_((YES_BTN, NO_BTN)))
 async def set_privilege(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.weekdays)
     await state.update_data(privilege=message.text.lower())
     await state.update_data(weekdays=[])
     await message.answer(
-        text="Выберите дни недели (либо всю неделю целиком), в которые обслуживается клиент, "
-             "затем нажмите рассчитать: 👇🏻",
+        text=chose_weekdays_msg,
         reply_markup=reply.get_weekdays_kb()
     )
 
 
-@router.message(CaringCost.weekdays,
-                (F.text.lower().in_(full_weekday_names.keys())) |
-                (F.text.lower() == 'выбрать всю неделю'))
+@router.message(CaringCost.weekdays, (F.text.in_(WEEKDAYS)) | (F.text == CHOOSE_All_WEEK_BTN))
 async def set_weekdays(message: types.Message, state: FSMContext) -> None:
     msg = message.text.lower()
     tmp_data = await state.get_data()
@@ -64,41 +65,105 @@ async def set_weekdays(message: types.Message, state: FSMContext) -> None:
     await message.answer(text=f"Вы выбрали дни недели:\n\n{format_weekdays_list(user_data['weekdays'])}")
 
 
-@router.message(CaringCost.weekdays, F.text.lower() == 'рассчитать')
+@router.message(CaringCost.weekdays, F.text == CALCULATE_BTN)
 async def calculate(message: types.Message, state: FSMContext) -> None:
     user_data = await state.get_data()
-    from_date = user_data.get('from_date')
-
-    if from_date in ('1', None):
-        await state.clear()
+    if user_data.get('weekdays'):
+        await message.answer(
+            text=get_total_message(data=get_total(user_data)),
+            reply_markup=reply.get_new_calc_kb(),
+        )
+        await state.set_state(None)
     else:
-        await state.set_state(state=None)
-        await state.set_data({'from_date': from_date})
-
-    await message.answer(
-        text=get_total_message(data=get_total(user_data)),
-        reply_markup=reply.get_new_calc_kb(),
-    )
+        await message.answer(
+            text=empty_weekdays_list_msg,
+            reply_markup=reply.get_weekdays_kb(),
+        )
 
 
 @router.message(Command(commands=["date"]))
-@router.message(F.text.lower() == SET_VISITING_PERIOD_BTN)
-async def set_from_date(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(CaringCost.from_date)
-    await message.answer(
-        text='Пожалуйста, введите число текущего месяца, с которого хотите проводить расчеты: 👇🏻'
-             '\n\n⚠️ Для отмены даты отсчета нажмите <b>Считать за весь месяц</b>',
-        reply_markup=reply.get_cancel_from_date_kb()
+@router.message(F.text == SET_VISITING_PERIODS_BTN)
+async def set_period(message: types.Message, state: FSMContext) -> None:
+    user_data = await state.get_data()
+    await state.set_state(CaringCost.period)
+    periods = user_data.get('periods')
+
+    if not periods:
+        await state.update_data(periods=[])
+
+    calendar_kb_msg_id = await message.answer(
+        text='Выберите один или несколько периодов посещений используя кнопки '
+             'c нужным числом под этим сообщением: 👇🏻',
+        reply_markup=inline.get_calendar_kb()
+    )
+    await state.update_data(calendar_kb_msg_id=calendar_kb_msg_id.message_id)
+    msg = await message.answer(text=f"{get_calendar_period_msg(periods=periods)}\n",
+                               reply_markup=reply.get_cancel_period_kb())
+    await state.update_data(msg_id=msg.message_id)
+
+
+async def update_periods_msg(message: types.Message, periods: list):
+    await message.edit_text(
+        text=get_periods_msg(periods=periods),
+        reply_markup=inline.get_calendar_kb()
     )
 
 
-@router.message(CaringCost.from_date, F.text.lower() == 'считать за весь месяц')
-async def cansel_from_date(message: types.Message, state: FSMContext) -> None:
+@router.callback_query()
+async def callbacks_periods(callback: types.CallbackQuery, state: FSMContext):
+    callback_data = callback.data
+    tmp_data = await state.get_data()
+
+    periods = tmp_data['periods']
+    period_ind = tmp_data.get('period_ind', 0)
+
+    if callback_data == 'ignore':
+        await callback.answer(text="Выберите число месяца!", show_alert=True)
+    else:
+        if [] not in periods:
+            periods.append([])
+        period_len = len(periods[period_ind])
+        if is_new_value_correct(periods=periods, new_value=int(callback_data)):
+            if period_len == 0:
+                periods[period_ind].append(int(callback_data))
+                await callback.answer(text=get_period_alert_msg(is_start_period=True,
+                                                                callback_data=callback_data), show_alert=True)
+            elif period_len == 1:
+                periods[period_ind].append(int(callback_data))
+                await callback.answer(text=get_period_alert_msg(is_start_period=False,
+                                                                callback_data=callback_data), show_alert=True)
+                period_ind += 1
+                tmp_data['period_ind'] = period_ind
+                await update_periods_msg(callback.message, periods)
+        else:
+            await callback.answer(text=incorrect_period_msg, show_alert=True)
+
+    await state.update_data(tmp_data)
+    await callback.answer()
+
+
+@router.message(CaringCost.period, F.text == SET_ALL_PERIODS_BTN)
+async def set_periods(message: types.Message, state: FSMContext, bot: Bot) -> None:
+    data = await state.get_data()
+    await bot.delete_message(chat_id=message.chat.id, message_id=data['calendar_kb_msg_id'])
     await state.set_state(CaringCost.privileges)
-    await state.update_data(from_date='1')
+    periods = data.get('periods')
     await message.answer(
-        text='⚠️Вы успешно отменили дату отсчета.\n'
-             'Все последующие расчеты будут проводиться с <b>начала</b> месяца.\n\n'
-             f'{privileges_message}',
+        text=get_setting_period_msg(periods=periods),
+        reply_markup=reply.get_yes_no_kb()
+    )
+
+
+@router.message(CaringCost.period, F.text == DELETE_ALL_PERIODS_BTN)
+async def delete_periods(message: types.Message, state: FSMContext, bot: Bot) -> None:
+    data = await state.get_data()
+    await bot.delete_message(chat_id=message.chat.id, message_id=data['calendar_kb_msg_id'])
+    await state.set_state(CaringCost.privileges)
+    periods = data.pop('periods')
+    if data.get('period_ind') is not None:
+        del data['period_ind']
+    await state.set_data(data=data)
+    await message.answer(
+        text=get_deleting_periods_msg(periods=periods),
         reply_markup=reply.get_yes_no_kb()
     )

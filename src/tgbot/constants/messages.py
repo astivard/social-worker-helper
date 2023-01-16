@@ -1,4 +1,4 @@
-from src.tgbot.constants.buttons import SET_VISITING_PERIOD_BTN
+from src.tgbot.constants.buttons import SET_VISITING_PERIODS_BTN
 from src.tgbot.constants.holidays import holidays_2023
 from src.tgbot.constants.months import correct_month_names
 from src.tgbot.constants.tariffs import tariffs
@@ -7,19 +7,34 @@ from src.tgbot.tools.month import get_current_month_name
 
 
 def get_total_message(data: tuple) -> str:
-    total, number_of_visit_days, number_of_days_data, day_care_cost, month, from_date = data
-    weekdays_info_msg = '\n'.join([f"<b>{weekday}</b>:   <i>{day}</i> {month}" for weekday, day in number_of_days_data])
-    result_message = f"Вы посетили клиента начиная c <b>{from_date}</b> <i>{month}</i> " \
-                     f"<b>{number_of_visit_days}</b> " \
-                     f"{format_number_of_visits_case(number_of_visit_days)}.\n\n" \
-                     f"<b>Ваши посещения:</b>\n{weekdays_info_msg}.\n\n" \
-                     f"Сумма:     <code>{number_of_visit_days} * {day_care_cost} = {total}</code>     руб."
-    return result_message
+    total, visiting_days_data, number_of_days_data, day_care_cost, month, periods = data
 
+    if type(periods[0]) != list:
+        start_day = periods[0]
+        end_day = periods[1]
+        res_msg = '\n'.join(
+            [f"<b>{weekday}</b>:   <i>{day}</i> {month}" for weekday, day in number_of_days_data])
+    else:
+        full_period_days = [day for period in periods for day in period]
+        start_day = min(full_period_days)
+        end_day = max(full_period_days)
+        periods_msg = []
+        for period in periods:
+            if period:
+                minor_period = f"\n<b>C {period[0]} по {period[1]} {get_current_month_name()}:</b>\n"
+                weekdays_info_msg = '\n'.join(
+                    [f"<b>{weekday}</b>:   <i>{day}</i> {month}" for weekday, day in number_of_days_data
+                     if period[0] <= day <= period[1]])
+                weekdays_info_msg = weekdays_info_msg if weekdays_info_msg else 'Нет посещений'
+                weekdays_info_msg = f"{minor_period}{weekdays_info_msg}"
+                periods_msg.append(weekdays_info_msg)
+        res_msg = "\n".join(periods_msg)
 
-def get_from_date_message(msg: str) -> str:
-    result_message = f'⚠️Ваши дальнейшие расчеты будут начинаться с ' \
-                     f'<b><i>{msg} {get_current_month_name()}</i></b>.'
+    result_message = f"Вы посетили клиента с <b>{start_day} по {end_day}</b> <i>{month}</i> " \
+                     f"<b>{visiting_days_data}</b> " \
+                     f"{format_number_of_visits_case(visiting_days_data)}.\n\n" \
+                     f"<b>Ваши посещения:</b>\n\n{res_msg}.\n\n" \
+                     f"Сумма:     <code>{visiting_days_data} * {day_care_cost} = {total}</code>     руб."
     return result_message
 
 
@@ -54,26 +69,82 @@ def get_current_month_holidays_msg():
     return f'<b>Нерабочие праздничные дни:</b>\n\n{result_msg}\n\n{transfers}'
 
 
+def get_period_alert_msg(is_start_period: bool, callback_data: str) -> str:
+    if is_start_period:
+        msg = f"Вы выбрали начало периода — {callback_data} {get_current_month_name()}.\n\n" \
+              f"Теперь выберите конец периода.\n\n" \
+              f"Подсказка: если Вам нужно задать период в один день, " \
+              f"выберите конец периода как тот же день."
+    else:
+        msg = f"Вы выбрали конец периода — {callback_data} {get_current_month_name()}.\n\n" \
+              f"Для выбора следующего периода снова выберите начало и конец периода.\n\n" \
+              f"Подсказка: после установки нужных периодов нажмите Установить периоды."
+    return msg
+
+
+def get_periods_msg(periods: list[list]) -> str:
+    msg = []
+    for period in periods:
+        if len(period) == 1:
+            period.append(period[0])
+        if period:
+            if period[0] == period[1]:
+                msg.append(f"{period[0]} <i>{get_current_month_name()}</i>")
+            else:
+                msg.append(f'{period[0]} — {period[1]} <i>{get_current_month_name()}</i>')
+    return '\n'.join(msg)
+
+
+def get_calendar_period_msg(periods: list) -> str:
+    msg = "⬆️ Установите периоды ⬆️"
+    if periods:
+        return f"{msg}\nУ вас установлены <b>периоды посещений</b>:\n" \
+               f"<b>{get_periods_msg(periods=periods)}</b> "
+    return msg
+
+
+def get_setting_period_msg(periods: list) -> str:
+    if periods:
+        return f"Вы установили <b>периоды посещений</b>:\n" \
+               f"<b>{get_periods_msg(periods=periods)}</b> " \
+               f"\n\n{privileges_message}"
+    return f"⚠️ Вы не выбрали ни одного периода.\n\n{privileges_message}"
+
+
+def get_deleting_periods_msg(periods: list) -> str:
+    if periods:
+        return f'⚠️ Периоды успешно удалены.\n\n{privileges_message}'
+    return f'⚠️ В данный момент у Вас не установлен ни один период расчета.\n\n{privileges_message}'
+
+
+chose_weekdays_msg = "Выберите дни недели (либо всю неделю целиком), " \
+                          "в которые обслуживается клиент, затем нажмите рассчитать: 👇🏻"
+
+empty_weekdays_list_msg = f"❗️Вы не выбрали ни одного дня недели!\n\n{chose_weekdays_msg}"
+
+incorrect_period_msg = "Нельзя выбрать этот день!"
+
 privileges_message = "Выберите, является ли клиент льготником: 👇🏻"
 
 help_msg = '<b>Доступные команды бота:</b>\n\n' \
-           '/start - перезапуск бота\n' \
-           '/calc - начать новый расчет\n' \
-           f'/date - {SET_VISITING_PERIOD_BTN.lower()}\n' \
-           '/help - помощь\n' \
+           '/start — перезапуск бота (используйте при возникновении каких-либо неполадок)\n' \
+           '/calc — начать новый расчет\n' \
+           '/date — задать периоды посещений\n' \
+           '/help — помощь\n' \
            '/tariffs - текущие тарифы\n' \
            '/holidays - нерабочие праздничные дни\n\n' \
            'Для быстрого вызова команд используйте кнопку меню.\n\n' \
            'Для начала расчета используйте команду /calc или кнопку <b>Начать новый расчет</b>.\n\n' \
-           'Если вы хотите считать стоимость обслуживания с определенного числа месяца, ' \
-           f'используйте команду /date или кнопку <b>{SET_VISITING_PERIOD_BTN}</b>. 👇'
+           'Если вы хотите считать стоимость обслуживания в определенные периоды месяца, ' \
+           f'используйте команду /date или кнопку <b>{SET_VISITING_PERIODS_BTN}</b>. 👇'
 
 welcome_msg = 'Добро пожаловать в Помощник для соцработника 👋\n\n' \
               f'{help_msg}'
 
 reboot_msg = '⚠️Бот был перезагружен в результате технических работ. ' \
-             f'Дата отсчета установлена на <b>1 {get_current_month_name()}</b> текущего месяца.\n\n' \
-             'Пожалуйста, установите (при надобности) нужную Вам дату отсчёта - /date ' \
+             f'Введенные Вами ранее данные были удалены. ' \
+             f'Расчет будет производится <b>за весь текущий месяц</b>.\n\n' \
+             'Пожалуйста, установите (при надобности) периоды посещений - /date ' \
              'и начните новый расчет - /calc 👇🏻'
 
 tariffs_msg = '<b>Текущие тарифы:</b>\n\n' \

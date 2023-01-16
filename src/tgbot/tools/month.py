@@ -5,9 +5,14 @@ from src.tgbot.constants.months import correct_month_names
 
 
 def get_days_in_current_month() -> int:
+    month, year = get_current_month_and_year_number()
+    return monthrange(year, month)[1]
+
+
+def get_current_month_and_year_number() -> tuple:
     month = datetime.now().month
     year = datetime.now().year
-    return monthrange(year, month)[1]
+    return month, year
 
 
 def _get_current_month_number() -> int:
