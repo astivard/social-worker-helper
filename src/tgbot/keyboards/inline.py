@@ -4,9 +4,7 @@ import locale
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.tgbot.constants.buttons import ALL_WEEKDAYS
-from src.tgbot.tools.month import get_current_month_and_year_number
-
-locale.setlocale(locale.LC_ALL, 'ru_RU.utf8')
+from src.tgbot.tools.month import get_current_month_and_year_number, get_current_month_name
 
 month, year = get_current_month_and_year_number()
 
@@ -15,7 +13,7 @@ def get_calendar_kb() -> InlineKeyboardMarkup:
     month_calendar = calendar.monthcalendar(year, month)
     keyboard = [[
         InlineKeyboardButton(
-            text=f'{calendar.month_name[month]} {str(year)}',
+            text=f'{get_current_month_name()[:-1].title()}ь {str(year)}',
             callback_data='ignore',
         ),
     ], [InlineKeyboardButton(text=day, callback_data='ignore') for day in ALL_WEEKDAYS]]
