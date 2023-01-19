@@ -19,8 +19,19 @@ def _get_current_month_number() -> int:
     return datetime.now().month
 
 
-def get_current_month_name() -> str:
-    return correct_month_names[_get_current_month_number()]
+def get_current_month_name(case: int = 2) -> str:
+    if case == 2:
+        return correct_month_names[_get_current_month_number()]
+    else:
+        current_month_number = _get_current_month_number()
+        if current_month_number == 3:
+            return 'март'
+        elif current_month_number == 5:
+            return 'апрель'
+        elif current_month_number == 8:
+            return 'август'
+        else:
+            return f"{correct_month_names[_get_current_month_number()][:-1]}ь"
 
 
 def get_available_month_days_numbers() -> list:
