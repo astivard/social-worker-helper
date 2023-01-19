@@ -12,7 +12,7 @@ CALCULATE_FOR_ALL_MONTH_BTN = 'Считать за весь месяц'
 SET_ALL_PERIODS_BTN = 'Установить периоды'
 DELETE_ALL_PERIODS_BTN = 'Удалить периоды'
 
-WEEKDAYS = [weekday.upper() for weekday in full_weekday_names.keys()]
+WEEKDAYS = [weekday.upper() for weekday in full_weekday_names]
 
 ALL_WEEKDAYS = WEEKDAYS + ['СБ', 'ВС']
 

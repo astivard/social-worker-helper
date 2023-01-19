@@ -1,5 +1,4 @@
 import calendar
-import locale
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
