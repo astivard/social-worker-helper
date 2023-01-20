@@ -8,7 +8,7 @@ from src.tgbot.tools.month import (get_current_month_name,
                                    get_days_in_current_month)
 
 
-def _get_start_end_days_of_period(period: list[int]) -> tuple[int, int]:
+def _get_first_last_days_of_period(period: list[int]) -> tuple[int, int]:
     period_len = len(period)
     if period_len == 1:
         return period[0], period[0]
@@ -29,7 +29,7 @@ def get_visiting_days(data: dict) -> list[tuple]:
     for day in data['weekdays']:
         for period in periods:
             if period:
-                start_day, end_day = _get_start_end_days_of_period(period=period)
+                start_day, end_day = _get_first_last_days_of_period(period=period)
                 weekday = full_weekday_names[day][1] - 1
                 for i in month_weeks:
                     if i[weekday] != 0 \
@@ -39,20 +39,45 @@ def get_visiting_days(data: dict) -> list[tuple]:
     return sorted(res, key=lambda t: t[1])
 
 
+def check_infrastructure(with_infrastructure: str) -> bool:
+    return True if with_infrastructure == 'с инфраструктурой' else False
+
+
+def get_tariffs_key(payment_type: str) -> str:
+    if payment_type == 'полная оплата':
+        return 'unprivileged_person'
+    elif payment_type == 'частичная оплата (60%)':
+        return 'privileged_person'
+    elif payment_type == 'семейные пары (50%)':
+        return 'married_couples_50'
+    else:
+        return 'married_couples_80'
+
+
+def _get_tariff(user_data: dict) -> int:
+    with_infrastructure = check_infrastructure(user_data['with_infrastructure'])
+    tariffs_key = get_tariffs_key(user_data['privilege'])
+    if with_infrastructure:
+        return tariffs[tariffs_key][0]
+    return tariffs[tariffs_key][1]
+
+
 def get_total(user_data: dict) -> tuple:
     month = get_current_month_name()
     visiting_days_data = get_visiting_days(user_data)
     number_of_days = len(visiting_days_data)
-    is_privileged = True if user_data['privilege'] == 'да' else False
-    day_care_cost = tariffs["privileged_person"][0] if \
-        is_privileged else tariffs["unprivileged_person"][0]
+
+    tariff = _get_tariff(user_data=user_data)
     periods = user_data.get('periods', [1, get_days_in_current_month()])
 
     if not periods:
         periods = [1, get_days_in_current_month()]
 
-    total = round(number_of_days * day_care_cost, 2)
-    result = (total, number_of_days, visiting_days_data, day_care_cost, month, periods)
+    infrastructure = user_data['with_infrastructure']
+    payment_type = user_data['privilege']
+
+    total = round(number_of_days * tariff, 2)
+    result = (total, number_of_days, visiting_days_data, tariff, month, periods, infrastructure, payment_type)
     return result
 
 

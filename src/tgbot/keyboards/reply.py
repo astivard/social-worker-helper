@@ -4,16 +4,6 @@ from aiogram.types import ReplyKeyboardMarkup
 from src.tgbot.constants.buttons import *
 
 
-def get_yes_no_kb() -> ReplyKeyboardMarkup:
-    keyboard = [
-        [types.KeyboardButton(text=YES_BTN),
-         types.KeyboardButton(text=NO_BTN)],
-        [types.KeyboardButton(text=SET_VISITING_PERIODS_BTN)]
-    ]
-    return types.ReplyKeyboardMarkup(keyboard=keyboard,
-                                     resize_keyboard=True)
-
-
 def get_weekdays_kb() -> ReplyKeyboardMarkup:
     keyboard = [
         [types.KeyboardButton(text=weekday) for weekday in WEEKDAYS],
@@ -39,6 +29,26 @@ def get_cancel_period_kb() -> ReplyKeyboardMarkup:
     keyboard = [
         [types.KeyboardButton(text=SET_ALL_PERIODS_BTN),
          types.KeyboardButton(text=DELETE_ALL_PERIODS_BTN)],
+    ]
+    return types.ReplyKeyboardMarkup(keyboard=keyboard,
+                                     resize_keyboard=True)
+
+
+def get_infrastructure_kb() -> ReplyKeyboardMarkup:
+    keyboard = [
+        [types.KeyboardButton(text=WITH_INFRASTRUCTURE_BTN),
+         types.KeyboardButton(text=WITHOUT_INFRASTRUCTURE_BTN)],
+    ]
+    return types.ReplyKeyboardMarkup(keyboard=keyboard,
+                                     resize_keyboard=True)
+
+
+def get_client_type_kb() -> ReplyKeyboardMarkup:
+    keyboard = [
+        [types.KeyboardButton(text=UNPRIVILEGED_PERSON_BTN),
+         types.KeyboardButton(text=PRIVILEGED_PERSON_BTN)],
+        [types.KeyboardButton(text=MARRIED_COUPLES_50),
+         types.KeyboardButton(text=MARRIED_COUPLES_80)]
     ]
     return types.ReplyKeyboardMarkup(keyboard=keyboard,
                                      resize_keyboard=True)

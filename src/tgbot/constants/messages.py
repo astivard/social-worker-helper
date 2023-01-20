@@ -4,10 +4,11 @@ from src.tgbot.constants.months import correct_month_names
 from src.tgbot.constants.tariffs import tariffs
 from src.tgbot.tools.formatters import format_number_of_visits_case
 from src.tgbot.tools.month import get_current_month_name
+from src.tgbot.tools.scripts import check_infrastructure
 
 
 def get_total_message(data: tuple) -> str:
-    total, visiting_days_data, number_of_days_data, day_care_cost, month, periods = data
+    total, visiting_days_data, number_of_days_data, tariff, month, periods, infrastructure, payment_type = data
 
     if type(periods[0]) != list:
         start_day = periods[0]
@@ -34,7 +35,9 @@ def get_total_message(data: tuple) -> str:
                      f"<b>{visiting_days_data}</b> " \
                      f"{format_number_of_visits_case(visiting_days_data)}.\n\n" \
                      f"<b>Ваши посещения:</b>\n\n{res_msg}.\n\n" \
-                     f"Сумма:     <code>{visiting_days_data} * {day_care_cost} = {total}</code>     руб."
+                     f"<b>Клиент:\n</b>{infrastructure}\n{payment_type}\n" \
+                     f"тариф — {tariff} руб.\n\n" \
+                     f"Итог:     <code>{visiting_days_data} * {tariff} = {total}</code>     руб."
     return result_message
 
 
@@ -107,32 +110,40 @@ def get_setting_period_msg(periods: list) -> str:
     if periods:
         return f"Вы установили <b>периоды посещений</b>:\n" \
                f"<b>{get_periods_msg(periods=periods)}</b> " \
-               f"\n\n{privileges_message}"
-    return f"⚠️ Вы не выбрали ни одного периода.\n\n{privileges_message}"
+               f"\n\n{infrastructure_msg}"
+    return f"⚠️ Вы не выбрали ни одного периода.\n\n{infrastructure_msg}"
 
 
 def get_deleting_periods_msg(periods: list) -> str:
     if periods:
-        return f'⚠️ Периоды успешно удалены.\n\n{privileges_message}'
-    return f'⚠️ В данный момент у Вас не установлен ни один период расчета.\n\n{privileges_message}'
+        return f'⚠️ Периоды успешно удалены.\n\n{infrastructure_msg}'
+    return f'⚠️ В данный момент у Вас не установлен ни один период расчета.\n\n{infrastructure_msg}'
 
 
 chose_weekdays_msg = "Выберите дни недели (либо всю неделю целиком), " \
-                          "в которые обслуживается клиент, затем нажмите рассчитать: 👇🏻"
+                     "в которые обслуживается клиент, затем нажмите рассчитать: 👇🏻"
 
 empty_weekdays_list_msg = f"❗️Вы не выбрали ни одного дня недели!\n\n{chose_weekdays_msg}"
 
 incorrect_period_msg = "Нельзя выбрать этот день!"
 
-privileges_message = "Выберите, является ли клиент льготником: 👇🏻"
+infrastructure_msg = "Выберите наличие инфраструктуры у клиента: 👇🏻"
+
+
+def get_pay_type_msg(with_infrastructure: str) -> str:
+    with_infrastructure = check_infrastructure(with_infrastructure=with_infrastructure)
+    if with_infrastructure:
+        return f"{tariffs_msg[22:290]}Выберите тип оплаты: 👇🏻"
+    return f"{tariffs_msg[290:]}Выберите тип оплаты: 👇🏻"
+
 
 help_msg = '<b>Доступные команды бота:</b>\n\n' \
            '/start — перезапуск бота (используйте при возникновении каких-либо неполадок)\n' \
            '/calc — начать новый расчет\n' \
            '/date — задать периоды посещений\n' \
            '/help — помощь\n' \
-           '/tariffs - текущие тарифы\n' \
-           '/holidays - нерабочие праздничные дни\n\n' \
+           '/tariffs — текущие тарифы\n' \
+           '/holidays — нерабочие праздничные дни\n\n' \
            'Для быстрого вызова команд используйте кнопку меню.\n\n' \
            'Для начала расчета используйте команду /calc или кнопку <b>Начать новый расчет</b>.\n\n' \
            'Если вы хотите считать стоимость обслуживания в определенные периоды месяца, ' \
@@ -149,20 +160,20 @@ reboot_msg = '⚠️Бот был перезагружен в результат
 
 tariffs_msg = '<b>Текущие тарифы:</b>\n\n' \
               f'<i>1) c наличием инфрастуктуры (1 час 50 минут):</i>\n\n' \
-              f'✔️полная оплата (100%):\n     ' \
+              f'☑️полная оплата (100%):\n     ' \
               f'<code>{tariffs["unprivileged_person"][0]} </code> руб.\n\n' \
-              f'✔️частичная оплата (60%):\n     ' \
+              f'☑️частичная оплата (60%):\n     ' \
               f'<code>{tariffs["privileged_person"][0]} </code>руб.\n\n' \
-              f'✔️семейные пары (50%):\n     ' \
+              f'☑️семейные пары (50%):\n     ' \
               f'<code>{tariffs["married_couples_50"][0]} </code>руб.\n\n' \
-              f'✔️семейные пары (80%):\n     ' \
+              f'☑️семейные пары (80%):\n     ' \
               f'<code>{tariffs["married_couples_80"][0]} </code>руб.\n\n' \
               f'<i>2) без наличия инфрастуктуры (2 часа 40 минут):</i>\n\n' \
-              f'✔️полная оплата (100%):\n     ' \
+              f'☑️полная оплата (100%):\n     ' \
               f'<code>{tariffs["unprivileged_person"][1]} </code> руб.\n\n' \
-              f'✔️частичная оплата (60%):\n     ' \
+              f'☑️частичная оплата (60%):\n     ' \
               f'<code>{tariffs["privileged_person"][1]} </code>руб.\n\n' \
-              f'✔️семейные пары (50%): \n     ' \
+              f'☑️семейные пары (50%): \n     ' \
               f'<code>{tariffs["married_couples_50"][1]} </code>руб.\n\n' \
-              f'✔️семейные пары (80%): \n     ' \
+              f'☑️семейные пары (80%): \n     ' \
               f'<code>{tariffs["married_couples_80"][1]} </code>руб.\n\n'

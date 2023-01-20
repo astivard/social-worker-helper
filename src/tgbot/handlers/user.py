@@ -3,20 +3,24 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from src.tgbot.constants.buttons import (CALCULATE_BTN, DELETE_ALL_PERIODS_BTN,
-                                         NO_BTN, SET_ALL_PERIODS_BTN,
+                                         PAYMENT_TYPES_BTN,
+                                         SET_ALL_PERIODS_BTN,
                                          SET_VISITING_PERIODS_BTN,
                                          START_NEW_CALCULATION_BTN, WEEKDAYS,
-                                         YES_BTN, CHOOSE_All_WEEK_BTN)
-from src.tgbot.constants.messages import (get_calendar_period_msg,
+                                         WITH_INFRASTRUCTURE_BTN,
+                                         WITHOUT_INFRASTRUCTURE_BTN,
+                                         CHOOSE_All_WEEK_BTN)
+from src.tgbot.constants.messages import (chose_weekdays_msg,
+                                          empty_weekdays_list_msg,
+                                          get_calendar_period_msg,
                                           get_deleting_periods_msg,
+                                          get_pay_type_msg,
                                           get_period_alert_msg,
                                           get_periods_msg,
                                           get_setting_period_msg,
                                           get_total_message,
                                           incorrect_period_msg,
-                                          privileges_message,
-                                          empty_weekdays_list_msg,
-                                          chose_weekdays_msg)
+                                          infrastructure_msg)
 from src.tgbot.constants.weekdays import full_weekday_names
 from src.tgbot.keyboards import inline, reply
 from src.tgbot.states.user import CaringCost
@@ -29,14 +33,24 @@ router = Router()
 @router.message(Command(commands=["calc"]))
 @router.message(F.text == START_NEW_CALCULATION_BTN)
 async def start_calc(message: types.Message, state: FSMContext) -> None:
-    await state.set_state(CaringCost.privileges)
+    await state.set_state(CaringCost.infrastructure)
     await message.answer(
-        text=privileges_message,
-        reply_markup=reply.get_yes_no_kb(),
+        text=infrastructure_msg,
+        reply_markup=reply.get_infrastructure_kb(),
     )
 
 
-@router.message(F.text.in_((YES_BTN, NO_BTN)))
+@router.message(F.text.in_((WITH_INFRASTRUCTURE_BTN, WITHOUT_INFRASTRUCTURE_BTN)))
+async def set_infrastructure(message: types.Message, state: FSMContext) -> None:
+    await state.set_state(CaringCost.privileges)
+    await state.update_data(with_infrastructure=message.text.lower())
+    await message.answer(
+        text=get_pay_type_msg(with_infrastructure=message.text.lower()),
+        reply_markup=reply.get_client_type_kb()
+    )
+
+
+@router.message(CaringCost.privileges, F.text.in_(PAYMENT_TYPES_BTN))
 async def set_privilege(message: types.Message, state: FSMContext) -> None:
     await state.set_state(CaringCost.weekdays)
     await state.update_data(privilege=message.text.lower())
@@ -146,11 +160,11 @@ async def callbacks_periods(callback: types.CallbackQuery, state: FSMContext):
 async def set_periods(message: types.Message, state: FSMContext, bot: Bot) -> None:
     data = await state.get_data()
     await bot.delete_message(chat_id=message.chat.id, message_id=data['calendar_kb_msg_id'])
-    await state.set_state(CaringCost.privileges)
+    await state.set_state(CaringCost.infrastructure)
     periods = data.get('periods')
     await message.answer(
         text=get_setting_period_msg(periods=periods),
-        reply_markup=reply.get_yes_no_kb()
+        reply_markup=reply.get_infrastructure_kb()
     )
 
 
@@ -158,12 +172,12 @@ async def set_periods(message: types.Message, state: FSMContext, bot: Bot) -> No
 async def delete_periods(message: types.Message, state: FSMContext, bot: Bot) -> None:
     data = await state.get_data()
     await bot.delete_message(chat_id=message.chat.id, message_id=data['calendar_kb_msg_id'])
-    await state.set_state(CaringCost.privileges)
+    await state.set_state(CaringCost.infrastructure)
     periods = data.pop('periods')
     if data.get('period_ind') is not None:
         del data['period_ind']
     await state.set_data(data=data)
     await message.answer(
         text=get_deleting_periods_msg(periods=periods),
-        reply_markup=reply.get_yes_no_kb()
+        reply_markup=reply.get_infrastructure_kb()
     )

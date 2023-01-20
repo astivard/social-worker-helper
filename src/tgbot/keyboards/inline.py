@@ -3,7 +3,8 @@ import calendar
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from src.tgbot.constants.buttons import ALL_WEEKDAYS
-from src.tgbot.tools.month import get_current_month_and_year_number, get_current_month_name
+from src.tgbot.tools.month import (get_current_month_and_year_number,
+                                   get_current_month_name)
 
 month, year = get_current_month_and_year_number()
 
