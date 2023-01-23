@@ -1,4 +1,5 @@
-from src.tgbot.constants.buttons import SET_VISITING_PERIODS_BTN
+from src.tgbot.constants.buttons import (SET_VISITING_PERIODS_BTN,
+                                         START_NEW_CALCULATION_BTN)
 from src.tgbot.constants.holidays import holidays_2023
 from src.tgbot.constants.months import correct_month_names
 from src.tgbot.constants.tariffs import tariffs
@@ -110,14 +111,14 @@ def get_setting_period_msg(periods: list) -> str:
     if periods:
         return f"Вы установили <b>периоды посещений</b>:\n" \
                f"<b>{get_periods_msg(periods=periods)}</b> " \
-               f"\n\n{infrastructure_msg}"
-    return f"⚠️ Вы не выбрали ни одного периода.\n\n{infrastructure_msg}"
+               f"\n\n{after_setting_or_deleting_periods_msg}"
+    return f"⚠️ Вы не выбрали ни одного периода.\n\n{after_setting_or_deleting_periods_msg}"
 
 
 def get_deleting_periods_msg(periods: list) -> str:
     if periods:
-        return f'⚠️ Периоды успешно удалены.\n\n{infrastructure_msg}'
-    return f'⚠️ В данный момент у Вас не установлен ни один период расчета.\n\n{infrastructure_msg}'
+        return f'⚠️ Периоды успешно удалены.\n\n{after_setting_or_deleting_periods_msg}'
+    return f'⚠️ В данный момент у Вас не установлен ни один период расчета.\n\n{after_setting_or_deleting_periods_msg}'
 
 
 chose_weekdays_msg = "Выберите дни недели (либо всю неделю целиком), " \
@@ -129,6 +130,14 @@ incorrect_period_msg = "Нельзя выбрать этот день!"
 
 infrastructure_msg = "Выберите наличие инфраструктуры у клиента: 👇🏻"
 
+unavailable_periods_kb_msg = "Данная клавиатура устарела! Воспользуйтесь новой, нажав\n" \
+                             f"{SET_VISITING_PERIODS_BTN}"
+
+after_setting_or_deleting_periods_msg = "Начните новый расчет с помощью кнопки\n" \
+                                        f"<b>{START_NEW_CALCULATION_BTN}</b>.\n\nДля задания или удаления периодов " \
+                                        "расчета нажмите\n" \
+                                        f"<b>{SET_VISITING_PERIODS_BTN}</b> 👇🏻"
+
 
 def get_pay_type_msg(with_infrastructure: str) -> str:
     with_infrastructure = check_infrastructure(with_infrastructure=with_infrastructure)
@@ -139,13 +148,13 @@ def get_pay_type_msg(with_infrastructure: str) -> str:
 
 help_msg = '<b>Доступные команды бота:</b>\n\n' \
            '/start — перезапуск бота (используйте при возникновении каких-либо неполадок)\n' \
-           '/calc — начать новый расчет\n' \
+           f'/calc — {START_NEW_CALCULATION_BTN.lower()}\n' \
            '/date — задать периоды посещений\n' \
            '/help — помощь\n' \
            '/tariffs — текущие тарифы\n' \
            '/holidays — нерабочие праздничные дни\n\n' \
            'Для быстрого вызова команд используйте кнопку меню.\n\n' \
-           'Для начала расчета используйте команду /calc или кнопку <b>Начать новый расчет</b>.\n\n' \
+           f'Для начала расчета используйте команду /calc или кнопку <b>{START_NEW_CALCULATION_BTN}</b>.\n\n' \
            'Если вы хотите считать стоимость обслуживания в определенные периоды месяца, ' \
            f'используйте команду /date или кнопку <b>{SET_VISITING_PERIODS_BTN}</b>. 👇'
 

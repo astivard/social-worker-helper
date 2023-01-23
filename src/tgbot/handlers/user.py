@@ -10,17 +10,12 @@ from src.tgbot.constants.buttons import (CALCULATE_BTN, DELETE_ALL_PERIODS_BTN,
                                          WITH_INFRASTRUCTURE_BTN,
                                          WITHOUT_INFRASTRUCTURE_BTN,
                                          CHOOSE_All_WEEK_BTN)
-from src.tgbot.constants.messages import (chose_weekdays_msg,
-                                          empty_weekdays_list_msg,
-                                          get_calendar_period_msg,
-                                          get_deleting_periods_msg,
-                                          get_pay_type_msg,
-                                          get_period_alert_msg,
-                                          get_periods_msg,
-                                          get_setting_period_msg,
-                                          get_total_message,
-                                          incorrect_period_msg,
-                                          infrastructure_msg)
+from src.tgbot.constants.messages import (
+    after_setting_or_deleting_periods_msg, chose_weekdays_msg,
+    empty_weekdays_list_msg, get_calendar_period_msg, get_deleting_periods_msg,
+    get_pay_type_msg, get_period_alert_msg, get_periods_msg,
+    get_setting_period_msg, get_total_message, incorrect_period_msg,
+    infrastructure_msg, unavailable_periods_kb_msg)
 from src.tgbot.constants.weekdays import full_weekday_names
 from src.tgbot.keyboards import inline, reply
 from src.tgbot.states.user import CaringCost
@@ -124,35 +119,41 @@ async def update_periods_msg(message: types.Message, periods: list):
 
 
 @router.callback_query()
-async def callbacks_periods(callback: types.CallbackQuery, state: FSMContext):
-    callback_data = callback.data
+async def callbacks_periods(callback: types.CallbackQuery, state: FSMContext, bot: Bot):
     tmp_data = await state.get_data()
+    periods = tmp_data.get('periods')
 
-    periods = tmp_data['periods']
-    period_ind = tmp_data.get('period_ind', 0)
-
-    if callback_data == 'ignore':
-        await callback.answer(text="Выберите число месяца!", show_alert=True)
+    if periods is None:
+        await callback.answer(text=unavailable_periods_kb_msg, show_alert=True)
+        await bot.send_message(text=after_setting_or_deleting_periods_msg,
+                               chat_id=callback.from_user.id,
+                               reply_markup=reply.get_new_calc_kb())
     else:
-        if [] not in periods:
-            periods.append([])
-        period_len = len(periods[period_ind])
-        if is_new_value_correct(periods=periods, new_value=int(callback_data)):
-            if period_len == 0:
-                periods[period_ind].append(int(callback_data))
-                await callback.answer(text=get_period_alert_msg(is_start_period=True,
-                                                                callback_data=callback_data), show_alert=True)
-            elif period_len == 1:
-                periods[period_ind].append(int(callback_data))
-                await callback.answer(text=get_period_alert_msg(is_start_period=False,
-                                                                callback_data=callback_data), show_alert=True)
-                period_ind += 1
-                tmp_data['period_ind'] = period_ind
-                await update_periods_msg(callback.message, periods)
-        else:
-            await callback.answer(text=incorrect_period_msg, show_alert=True)
+        callback_data = callback.data
+        tmp_data = await state.get_data()
+        period_ind = tmp_data.get('period_ind', 0)
 
-    await state.update_data(tmp_data)
+        if callback_data == 'ignore':
+            await callback.answer(text="Выберите число месяца!", show_alert=True)
+        else:
+            if [] not in periods:
+                periods.append([])
+            period_len = len(periods[period_ind])
+            if is_new_value_correct(periods=periods, new_value=int(callback_data)):
+                if period_len == 0:
+                    periods[period_ind].append(int(callback_data))
+                    await callback.answer(text=get_period_alert_msg(is_start_period=True,
+                                                                    callback_data=callback_data), show_alert=True)
+                elif period_len == 1:
+                    periods[period_ind].append(int(callback_data))
+                    await callback.answer(text=get_period_alert_msg(is_start_period=False,
+                                                                    callback_data=callback_data), show_alert=True)
+                    period_ind += 1
+                    tmp_data['period_ind'] = period_ind
+                    await update_periods_msg(callback.message, periods)
+            else:
+                await callback.answer(text=incorrect_period_msg, show_alert=True)
+            await state.update_data(tmp_data)
     await callback.answer()
 
 
@@ -164,7 +165,7 @@ async def set_periods(message: types.Message, state: FSMContext, bot: Bot) -> No
     periods = data.get('periods')
     await message.answer(
         text=get_setting_period_msg(periods=periods),
-        reply_markup=reply.get_infrastructure_kb()
+        reply_markup=reply.get_new_calc_kb()
     )
 
 
@@ -179,5 +180,5 @@ async def delete_periods(message: types.Message, state: FSMContext, bot: Bot) ->
     await state.set_data(data=data)
     await message.answer(
         text=get_deleting_periods_msg(periods=periods),
-        reply_markup=reply.get_infrastructure_kb()
+        reply_markup=reply.get_new_calc_kb()
     )
