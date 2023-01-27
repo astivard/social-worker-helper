@@ -13,7 +13,7 @@ def get_calendar_kb() -> InlineKeyboardMarkup:
     month_calendar = calendar.monthcalendar(year, month)
     keyboard = [[
         InlineKeyboardButton(
-            text=f'{get_current_month_name(case=1).title()} {str(year)}',
+            text=f'{get_current_month_name(is_nominative=True).title()} {str(year)}',
             callback_data='ignore',
         ),
     ], [InlineKeyboardButton(text=day, callback_data='ignore') for day in ALL_WEEKDAYS]]

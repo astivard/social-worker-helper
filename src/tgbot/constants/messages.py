@@ -4,26 +4,31 @@ from src.tgbot.constants.holidays import holidays_2023
 from src.tgbot.constants.months import correct_month_names
 from src.tgbot.constants.tariffs import tariffs
 from src.tgbot.tools.formatters import format_number_of_visits_case
-from src.tgbot.tools.month import get_current_month_name
+from src.tgbot.tools.month import (get_current_month_and_year_number,
+                                   get_current_month_name)
 from src.tgbot.tools.scripts import check_infrastructure
 
 
 def get_total_message(data: tuple) -> str:
     total, visiting_days_data, number_of_days_data, tariff, month, periods, infrastructure, payment_type = data
+    current_month_number, current_year = get_current_month_and_year_number()
+    current_month_number = str(current_month_number)
 
     if type(periods[0]) != list:
-        start_day = periods[0]
-        end_day = periods[1]
+        start_day = str(periods[0])
+        end_day = str(periods[1])
         res_msg = '\n'.join(
             [f"<b>{weekday}</b>:   <i>{day}</i> {month}" for weekday, day in number_of_days_data])
     else:
         full_period_days = [day for period in periods for day in period]
-        start_day = min(full_period_days)
-        end_day = max(full_period_days)
+        start_day = str(min(full_period_days))
+        end_day = str(max(full_period_days))
         periods_msg = []
         for period in periods:
             if period:
-                minor_period = f"\n<b>C {period[0]} по {period[1]} {get_current_month_name()}:</b>\n"
+                start_date = f"{str(period[0]).rjust(2, '0')}.{current_month_number.rjust(2, '0')}.{current_year}"
+                finish_date = f"{str(period[1]).rjust(2, '0')}.{current_month_number.rjust(2, '0')}.{current_year}"
+                minor_period = f"\n<b>C {start_date} по {finish_date}:</b>\n"
                 weekdays_info_msg = '\n'.join(
                     [f"<b>{weekday}</b>:   <i>{day}</i> {month}" for weekday, day in number_of_days_data
                      if period[0] <= day <= period[1]])
@@ -32,7 +37,9 @@ def get_total_message(data: tuple) -> str:
                 periods_msg.append(weekdays_info_msg)
         res_msg = "\n".join(periods_msg)
 
-    result_message = f"Вы посетили клиента с <b>{start_day} по {end_day}</b> <i>{month}</i> " \
+    result_message = f"Вы посетили клиента в <i>{get_current_month_name(is_prepositional=True)}</i> с " \
+                     f"<b>{start_day.rjust(2, '0')}.{current_month_number.rjust(2, '0')}.{current_year} " \
+                     f"по {end_day.rjust(2, '0')}.{current_month_number.rjust(2, '0')}.{current_year}</b> " \
                      f"<b>{visiting_days_data}</b> " \
                      f"{format_number_of_visits_case(visiting_days_data)}.\n\n" \
                      f"<b>Ваши посещения:</b>\n\n{res_msg}.\n\n" \

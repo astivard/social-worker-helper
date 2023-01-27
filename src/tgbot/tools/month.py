@@ -9,7 +9,7 @@ def get_days_in_current_month() -> int:
     return monthrange(year, month)[1]
 
 
-def get_current_month_and_year_number() -> tuple:
+def get_current_month_and_year_number() -> tuple[int, int]:
     month = datetime.now().month
     year = datetime.now().year
     return month, year
@@ -19,10 +19,12 @@ def _get_current_month_number() -> int:
     return datetime.now().month
 
 
-def get_current_month_name(case: int = 2) -> str:
-    if case == 2:
-        return correct_month_names[_get_current_month_number()]
-    else:
+def get_current_month_name(is_prepositional: bool = False,
+                           is_nominative: bool = False) -> str:
+    current_month_number = _get_current_month_number()
+    if is_prepositional:
+        return f"{correct_month_names[current_month_number][:-1]}е"
+    elif is_nominative:
         current_month_number = _get_current_month_number()
         if current_month_number == 3:
             return 'март'
@@ -31,7 +33,8 @@ def get_current_month_name(case: int = 2) -> str:
         elif current_month_number == 8:
             return 'август'
         else:
-            return f"{correct_month_names[_get_current_month_number()][:-1]}ь"
+            return f"{correct_month_names[current_month_number][:-1]}ь"
+    return correct_month_names[current_month_number]
 
 
 def get_available_month_days_numbers() -> list:
