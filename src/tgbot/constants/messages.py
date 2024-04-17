@@ -73,10 +73,7 @@ def get_current_month_holidays_msg():
 
     result_msg = '\n'.join([f'<i>{", ".join(list(map(str, holidays)))}</i>   {month}' for month, holidays in
                             non_working_holidays.items()])
-    transfers = "<b>Переносы рабочих дней:</b>\n\n" \
-                "с понедельника 24 апреля на субботу 29 апреля\n" \
-                "с понедельника 8 мая на субботу 13 мая\n" \
-                "c понедельника 6 ноября на субботу 11 ноября\n"
+    transfers = ""
     return f'<b>Нерабочие праздничные дни:</b>\n\n{result_msg}\n\n{transfers}'
 
 
